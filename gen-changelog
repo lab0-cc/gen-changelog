@@ -47,7 +47,7 @@ INITIAL_DATE="$(date -d "$INITIAL_DATE" +%Y-%m-%d)" || die "Invalid initial date
 INITIAL_DATE_BEFORE="$(date -d "$INITIAL_DATE - 1 day" +%Y-%m-%d)"
 
 # Collect days with commits after the initial date
-mapfile -t all_days < <(TZ=UTC git log --since="$INITIAL_DATE 00:00:00" --format='%cd' --date=short-local | sort -ru)
+mapfile -t all_days < <(TZ=UTC git log --since="$INITIAL_DATE 00:00:00" --until="$(date -d yesterday +%Y-%m-%d) 23:59:59" --format='%cd' --date=short-local | sort -ru)
 
 # Check if there are commits to collect before the initial date
 if [ "$(git rev-list -n 1 --before="$INITIAL_DATE_BEFORE 23:59:59" HEAD)" ]; then
@@ -68,7 +68,7 @@ for day in "${all_days[@]}"; do
   fi
 
   # Gather commits
-  commits="$(git log "${range[@]}" --no-merges --pretty=format:'%h%x09%s')"
+  commits="$(git log "${range[@]}" --reverse --no-merges --pretty=format:'%h%x09%s')"
 
   day_after="$(date -d "$day + 1 day" +%Y-%m-%d)"
   version="0~git${day_after//-/}-1"
